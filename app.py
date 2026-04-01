@@ -36,7 +36,7 @@ elif st.session_state.page == "app":
     # ✅ Gentamicin SMILES (simplified representation)
     smiles = st.text_input(
         "Enter SMILES",
-        "CC1C(C(C(C(O1)O)N)O)OC2C(C(C(C(O2)CO)N)O)OC3C(C(C(C(O3)CO)N)O)O"
+        "CC1C(C(C(C(O1)O)N)O)OC2C(C(C(C(O2)CO)N)O)OC3C(C(C(C(O3)CO)N)O)N"
     )
 
     # -------------------------------
@@ -46,7 +46,7 @@ elif st.session_state.page == "app":
 
         centers = []
 
-        total_centers = 9   # Gentamicin ~9 chiral centers (approx)
+        total_centers = 12  # Gentamicin ~9 chiral centers (approx)
 
         for i in range(1, total_centers + 1):
 
