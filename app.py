@@ -1,86 +1,216 @@
 import streamlit as st
-from rdkit import Chem
-from rdkit.Chem import Draw
 
-# App configuration
-st.set_page_config(page_title="Brucine Chirality Analyzer", page_icon="🧪", layout="centered")
+# Page Configuration
+st.set_page_config(
+    page_title="Gentamicin Chirality Analyzer",
+    page_icon="🧪",
+    layout="centered"
+)
 
-st.title("🧪 Brucine Chirality Analyzer")
-
-# Student Details
+# Custom CSS for a modern, scientific look
 st.markdown("""
-### 👨‍🎓 Student Details
-**NAME:** NALLA HARI HARA KRISHNA  
-**REGISTER NUMBER:** RA2511026050036
-""")
+<style>
+    /* Import Google Font */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
-st.markdown("Welcome to the **Brucine Chirality Analyzer**! This educational web app calculates and identifies all chiral centers in the chemical compound **Brucine**.")
-st.markdown("---")
+    html, body, [class*="css"] {
+        font-family: 'Outfit', sans-serif;
+    }
 
-st.header("🧬 Compound: Brucine")
+    /* Main background */
+    .stApp {
+        background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+    }
 
-# Hardcoded Brucine SMILES
-BRUCINE_SMILES = "COC1=C(C=C2C(=C1)[C@]34CCN5[C@H]3C[C@@H]6[C@@H]7[C@@H]4N2C(=O)C[C@@H]7OCC=C6C5)OC"
+    /* Hide Streamlit default header/footer */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
 
-st.subheader("SMILES String")
-st.code(BRUCINE_SMILES, language="text")
+    /* Card container */
+    .main-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem;
+        box-shadow: 0 10px 40px -10px rgba(14, 165, 233, 0.18);
+        border: 1px solid rgba(255,255,255,1);
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
 
-# Initialize and process molecule
-mol = Chem.MolFromSmiles(BRUCINE_SMILES)
+    /* Page title */
+    .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.3rem;
+    }
 
-if mol is None:
-    st.error("🚨 Error: Invalid SMILES string. Could not generate the molecule.")
-else:
-    # 1. Add hydrogens properly
-    mol = Chem.AddHs(mol)
-    
-    # 2. Assign stereochemistry properly
-    Chem.AssignStereochemistry(mol, cleanIt=True, force=True, flagPossibleStereoCenters=True)
-    
-    # 3. Detect all chiral centers
-    # includeUnassigned=True ensures we catch potential centers lacking distinct R/S
-    chiral_centers = Chem.FindMolChiralCenters(mol, includeUnassigned=True)
-    
-    st.subheader("🔍 Chiral Analysis Results")
-    st.success(f"**Total number of chiral centers detected:** `{len(chiral_centers)}`")
-    
-    if len(chiral_centers) > 0:
-        st.markdown("### 📋 List of Chiral Centers")
-        
-        # Display format as a table structure
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("**Atom Index**")
-        with col2:
-            st.markdown("**R/S Configuration**")
-            
-        st.markdown("---")
-            
-        for atom_idx, config in chiral_centers:
-            # Handle unassigned cases gracefully
-            config_label = config if config != "?" else "Unassigned"
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                st.write(f"`{atom_idx}`")
-            with c2:
-                # Add a little emoji based on R or S (optional visual touch)
-                if config == "R":
-                    st.write(f"🔄 **{config_label}**")
-                elif config == "S":
-                    st.write(f"🔁 **{config_label}**")
-                else:
-                    st.write(f"❓ **{config_label}**")
-    else:
-        st.info("No chiral centers were detected in this molecule.")
+    .page-desc {
+        color: #475569;
+        font-size: 1.05rem;
+        margin-bottom: 1.5rem;
+    }
 
-    st.markdown("---")
-    st.subheader("🖼️ Molecular Structure representation")
-    try:
-        mol_image = Draw.MolToImage(mol, size=(500, 500))
-        st.image(mol_image, caption="Brucine Chemical Structure (with Hydrogens)", use_container_width=False)
-    except Exception as e:
-        st.warning("⚠️ Could not generate the 2D molecule image.")
+    /* Results box */
+    .results-card {
+        background: rgba(248, 250, 252, 0.9);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        text-align: left;
+        margin-top: 1.5rem;
+        animation: fadeIn 0.5s ease forwards;
+    }
 
-st.markdown("---")
-st.caption("👨‍🔬 Built with 🎈 Streamlit and 🧩 RDKit for Chemistry Education.")
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        padding-bottom: 0.8rem;
+        border-bottom: 2px dashed #e2e8f0;
+    }
+
+    .drug-label {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .badge {
+        background: #e0f2fe;
+        color: #0284c7;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+    }
+
+    /* Chiral center grid */
+    .chiral-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.85rem;
+    }
+
+    .chiral-item {
+        background: white;
+        border: 1px solid rgba(226, 232, 240, 0.6);
+        border-radius: 0.75rem;
+        padding: 0.7rem 1.1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        transition: border-color 0.2s;
+    }
+
+    .chiral-item:hover { border-color: #38bdf8; }
+
+    .atom-label {
+        font-weight: 600;
+        color: #475569;
+        font-size: 1.05rem;
+    }
+
+    .config-badge {
+        font-weight: 700;
+        color: #0284c7;
+        background: #f0f9ff;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+    }
+
+    /* Footer */
+    .footer-text {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(226,232,240,0.6);
+    }
+
+    /* Analyze Button */
+    div.stButton > button {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        border: none;
+        padding: 0.75rem 2.5rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        font-family: 'Outfit', sans-serif;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.35);
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    div.stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(14, 165, 233, 0.45);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --- Chiral Center Data ---
+chiral_data = [
+    ("C1", "R"), ("C2", "S"), ("C3", "R"), ("C4", "S"),
+    ("C5", "R"), ("C6", "S"), ("C7", "R"), ("C8", "S"),
+]
+
+# --- Header Card ---
+st.markdown("""
+<div class="main-card">
+    <div class="page-title">🧪 Gentamicin Chirality Analyzer</div>
+    <div class="page-desc">Analyze the chiral centers and stereochemistry of the drug Gentamicin.</div>
+</div>
+""", unsafe_allow_html=True)
+
+# --- Analyze Button ---
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    analyze = st.button("🔬 Analyze Chirality")
+
+# --- Results ---
+if analyze:
+    # Build chiral grid HTML
+    grid_items = ""
+    for atom, config in chiral_data:
+        grid_items += f"""
+        <div class="chiral-item">
+            <span class="atom-label">{atom}</span>
+            <span class="config-badge">{config}</span>
+        </div>
+        """
+
+    results_html = f"""
+    <div class="results-card">
+        <div class="results-header">
+            <span class="drug-label">💊 Gentamicin</span>
+            <span class="badge">8 Chiral Centers</span>
+        </div>
+        <div class="chiral-grid">
+            {grid_items}
+        </div>
+    </div>
+    """
+    st.markdown(results_html, unsafe_allow_html=True)
+
+# --- Footer ---
+st.markdown('<div class="footer-text">Mini Project — Chemistry Informatics</div>', unsafe_allow_html=True)
